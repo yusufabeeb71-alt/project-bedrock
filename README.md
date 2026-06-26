@@ -32,8 +32,8 @@ helm upgrade --install retail-store \
 | Region | us-east-1 |
 | VPC | project-bedrock-vpc |
 | App Namespace | retail-app |
-| App URL (HTTP) | http://k8s-retailap-retailst-17d19cf248-169468874.us-east-1.elb.amazonaws.com/ |
-| Assets Bucket | bedrock-assets-alt-soe-025-3508 |
+| App URL (HTTP) | http://k8s-retailap-retailst-17d19cf248-606532541.us-east-1.elb.amazonaws.com/ |
+| Assets Bucket | bedrock-assets-alt-soee-025-3508 |
 | Lambda | bedrock-asset-processor |
 
 ## Developer Access
@@ -45,7 +45,7 @@ helm upgrade --install retail-store \
 - CloudWatch Container logs: /aws/containerinsights/project-bedrock-cluster/application
 
 ## Access the Application
-http://k8s-retailap-retailst-17d19cf248-169468874.us-east-1.elb.amazonaws.com/
+http://k8s-retailap-retailst-17d19cf248-606532541.us-east-1.elb.amazonaws.com/
 
 ## Grading Credentials
 See submission Google Doc for credentials.
