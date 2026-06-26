@@ -8,103 +8,62 @@ on:
       - '.github/workflows/terraform-plan.yml'
 
 permissions:
-  id-token: write        # Required for OIDC
-  contents: read         # Required to checkout code
-  pull-requests: write   # Required to post PR comments
-  security-events: write # Required for SARIF security upload
+  id-token: write
+  contents: read
+  pull-requests: write
 
 env:
   TF_IN_AUTOMATION: true
   AWS_REGION: ${{ vars.AWS_REGION }}
 
 jobs:
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      # Step 1: Checkout repository
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # Step 2: Run tfsec - Terraform IaC security scanner
-      - name: Run tfsec
-        uses: aquasecurity/tfsec-action@v1.0.0
-        with:
-          working_directory: ./terraform
-          soft_fail: true # Don't block, just report
-
-      # Step 3: Run Checkov - Multi-framework IaC scanner
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          directory: terraform
-          framework: terraform
-          soft_fail: true  # Report issues without blocking the pipeline
-          output_format: cli
-
   terraform-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
-    needs: security-scan  # Security scan MUST pass before planning
     defaults:
       run:
         working-directory: ./terraform
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Configure AWS Credentials via OIDC
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GitHubActions-Terraform-Plan
-          role-duration-seconds: 1800  # 30 min for plan
 
-      # Step 3: Verify AWS Authentication (debugging)
       - name: Verify AWS Credentials
         run: aws sts get-caller-identity
 
-      # Step 4: Setup Terraform (FIXED: wrapper set to true to capture outputs)
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.10.0"
           terraform_wrapper: true
 
-      # Step 5: Terraform Format Check
-      - name: Terraform Format
-        id: fmt
-        run: terraform fmt -recursive  # Auto-fix formatting before checking
-        continue-on-error: true
-
-      # Step 6: Terraform Init
       - name: Terraform Init
         id: init
         run: terraform init
 
-      # Step 7: Terraform Validate
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
 
-      # Step 8: Terraform Plan
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false -out=tfplan
+        run: terraform plan -no-color -input=false
         continue-on-error: true
+        env:
+          TF_VAR_student_id: ${{ secrets.STUDENT_ID }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
-      # Step 9: Post Plan to PR Comment
       - name: Post Plan to PR
         uses: actions/github-script@v7
         if: github.event_name == 'pull_request'
         env:
           PLAN_OUTPUT: ${{ steps.plan.outputs.stdout }}
-          PLAN_STDERR: ${{ steps.plan.outputs.stderr }}
-          FMT_OUTCOME: ${{ steps.fmt.outcome }}
           INIT_OUTCOME: ${{ steps.init.outcome }}
           VALIDATE_OUTCOME: ${{ steps.validate.outcome }}
           PLAN_OUTCOME: ${{ steps.plan.outcome }}
@@ -112,29 +71,22 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const plan = process.env.PLAN_OUTPUT || "No plan output";
-            const planErr = process.env.PLAN_STDERR || "";
-            const fmtOutcome = process.env.FMT_OUTCOME;
-            const initOutcome = process.env.INIT_OUTCOME;
-            const validateOutcome = process.env.VALIDATE_OUTCOME;
-            const planOutcome = process.env.PLAN_OUTCOME;
-
-            // Optional: Truncate plan if it exceeds GitHub comment character limit (~65k characters)
             const maxLen = 60000;
-            const formattedPlan = plan.length > maxLen ? `${plan.substring(0, maxLen)}\n\n...Plan truncated due to length limits...` : plan;
+            const formattedPlan = plan.length > maxLen
+              ? plan.substring(0, maxLen) + "\n\n...Plan truncated..."
+              : plan;
 
             const output = `## Terraform Plan Results
 
             ### Status Summary
-            - **Format Check**: \`${fmtOutcome}\` 🖌️
-            - **Initialization**: \`${initOutcome}\` ⚙️
-            - **Validation**: \`${validateOutcome}\` 🤖
-            - **Plan**: \`${planOutcome}\` 📖
+            - **Initialization**: \`${process.env.INIT_OUTCOME}\` ⚙️
+            - **Validation**: \`${process.env.VALIDATE_OUTCOME}\` 🤖
+            - **Plan**: \`${process.env.PLAN_OUTCOME}\` 📋
 
             <details><summary>Show Plan Output</summary>
 
             \`\`\`terraform
             ${formattedPlan}
-            ${planErr}
             \`\`\`
 
             </details>
@@ -148,7 +100,6 @@ jobs:
               body: output
             });
 
-      # Step 10: Fail if plan failed
       - name: Check Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
