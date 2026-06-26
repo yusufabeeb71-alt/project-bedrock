@@ -2,12 +2,12 @@
   "assets_bucket_name": {
     "sensitive": false,
     "type": "string",
-    "value": "bedrock-assets-alt-soe-025-3508"
+    "value": "bedrock-assets-alt-soee-025-3508"
   },
   "cluster_endpoint": {
     "sensitive": false,
     "type": "string",
-    "value": "https://14A12E9A4D3456E09298ECF71D403713.gr7.us-east-1.eks.amazonaws.com"
+    "value": "https://875AE91476281309AFEF2C731EF52FEB.gr7.us-east-1.eks.amazonaws.com"
   },
   "cluster_name": {
     "sensitive": false,
@@ -17,17 +17,17 @@
   "dev_access_key_id": {
     "sensitive": false,
     "type": "string",
-    "value": "AKIA3XGBHEQUHQMCKXMF"
+    "value": "AKIARLWGP4WX6NLP5WGB"
   },
   "dev_console_password": {
     "sensitive": true,
     "type": "string",
-    "value": "SEE-SUBMITTED-CONSOLE-PASSWORD"
+    "value": "REDACTED-SEE-SUBMISSION-DOC"
   },
   "dev_secret_access_key": {
     "sensitive": true,
     "type": "string",
-    "value": "SEE-SUBMITTED-SECRET-KEY"
+    "value": "REDACTED-SEE-SUBMISSION-DOC"
   },
   "region": {
     "sensitive": false,
@@ -37,6 +37,6 @@
   "vpc_id": {
     "sensitive": false,
     "type": "string",
-    "value": "vpc-07597f89179cb50b4"
+    "value": "vpc-01881ac7dd0f066e2"
   }
 }

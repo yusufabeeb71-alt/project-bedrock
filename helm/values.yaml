@@ -1,0 +1,26 @@
+# Disable all in-cluster databases
+catalog:
+  db:
+    host: "bedrock-mysql.c85uyycoi6ew.us-east-1.rds.amazonaws.com"
+    name: "retailstore"
+    user: "admin"
+    password: "SuperSecure123!"
+
+mysql:
+  enabled: false
+
+orders:
+  db:
+    host: "bedrock-postgres.c85uyycoi6ew.us-east-1.rds.amazonaws.com"
+    name: "retailstore"
+    user: "dbadmin"
+    password: "SuperSecure123!"
+
+postgresql:
+  enabled: false
+
+carts:
+  dynamodb:
+    enabled: true
+    region: us-east-1
+    tableName: bedrock-retail-catalog

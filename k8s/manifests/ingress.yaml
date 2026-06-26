@@ -6,7 +6,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/subnets: subnet-0d581815f9fbb1bdf,subnet-074844224cf83fa6f
+    alb.ingress.kubernetes.io/subnets: subnet-0dfc8a52a04643efa,subnet-08d0db2652e02fda5
     alb.ingress.kubernetes.io/tags: Project=karatu-2025-capstone
 spec:
   ingressClassName: alb
